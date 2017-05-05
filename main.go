@@ -14,6 +14,7 @@ import (
 	"runtime"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -89,10 +90,10 @@ func fileExists(path string) bool {
 }
 
 func downloadFile(url, fileToSave string) error {
-	err := os.MkdirAll(filepath.Dir(fileToSave), os.ModeDir|0700)
+	dir := filepath.Dir(fileToSave)
+	err := os.MkdirAll(dir, os.ModeDir|0700)
 	if err != nil {
-		log.Debugf("Failed to MkdirAll: %v", err)
-		return err
+		return errors.Wrapf(err, "mkdir %q failed", dir)
 	}
 
 	file, err := os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0755)
@@ -100,7 +101,7 @@ func downloadFile(url, fileToSave string) error {
 		log.Debugf("File %q already exists, skipping download", fileToSave)
 		return nil
 	} else if err != nil {
-		return err
+		return errors.Wrapf(err, "open %q failed", fileToSave)
 	}
 	defer file.Close()
 
@@ -108,20 +109,17 @@ func downloadFile(url, fileToSave string) error {
 	log.Infof("Downloading file %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Debugf("Failed to download golang archive: %v", err)
-		return err
+		return errors.Wrap(err, "download failed")
 	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		log.Debugf("Failed to download golang archive: non-2XX response: %q", resp.Status)
-		return fmt.Errorf("Received %q http status", resp.Status)
+		return fmt.Errorf("failed due to non-2XX response: %q", resp.Status)
 	}
 	defer resp.Body.Close()
 
 	// Write file to disk
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
-		log.Debugf("Failed copy golang archive to disk: %v", err)
-		return err
+		return errors.Wrap(err, "copy to disk failed")
 	}
 
 	return nil
@@ -134,21 +132,18 @@ func extractFile(golangArchive, baseDir string) error {
 	log.Debugf("Extracting %q", golangArchive)
 	err := os.MkdirAll(baseDir, os.ModeDir|0700)
 	if err != nil {
-		log.Debugf("Failed to MkdirAll: %v", err)
-		return err
+		return errors.Wrapf(err, "mkdir %q failed", baseDir)
 	}
 
 	file, err := os.Open(golangArchive)
 	if err != nil {
-		log.Debugf("Failed to Open: %v", err)
-		return err
+		return errors.Wrapf(err, "file open %q failed", golangArchive)
 	}
 	defer file.Close()
 
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
-		log.Debugf("Failed to gzip.NewReader: %v", err)
-		return err
+		return errors.Wrap(err, "gzip reader open failed")
 	}
 	defer gzipReader.Close()
 
@@ -161,8 +156,7 @@ func extractFile(golangArchive, baseDir string) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			log.Debugf("Failed to tarReader.Next(): %v", err)
-			return err
+			return errors.Wrap(err, "tar reader next failed")
 		}
 
 		path := filepath.Join(baseDir, header.Name)
@@ -170,23 +164,20 @@ func extractFile(golangArchive, baseDir string) error {
 		if fileInfo.IsDir() {
 			err = os.MkdirAll(path, fileInfo.Mode())
 			if err != nil {
-				log.Debugf("Failed to MkdirAll for %q: %v", path, err)
-				return err
+				return errors.Wrapf(err, "mkdir %q failed", path)
 			}
 			continue
 		}
 
 		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fileInfo.Mode())
 		if err != nil {
-			log.Debugf("Failed to OpenFile for %q: %v", path, err)
-			return err
+			return errors.Wrapf(err, "open file %q failed", path)
 		}
 
 		_, err = io.Copy(file, tarReader)
 		if err != nil {
-			log.Debugf("Failed to io.Copy for %q: %v", path, err)
 			file.Close()
-			return err
+			return errors.Wrapf(err, "copy for %q failed", path)
 		}
 		file.Close()
 		fileCount++
