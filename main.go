@@ -86,6 +86,7 @@ func main() {
 	}
 
 	// Run go command
+	setGoRoot(baseDir)
 	if len(flag.Args()) > 1 {
 		err = runGo(baseDir, flag.Args()[1:])
 	} else {
@@ -113,6 +114,10 @@ func fileExists(path string) bool {
 		return false
 	}
 	return true
+}
+
+func setGoRoot(baseDir string) {
+	os.Setenv("GOROOT", baseDir)
 }
 
 func downloadFile(url, fileToSave string) error {
