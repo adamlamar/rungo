@@ -198,6 +198,12 @@ func extractFile(golangArchive, baseDir string) error {
 				return errors.Wrapf(err, "mkdir %q failed", path)
 			}
 			continue
+		} else {
+			// Make directory containing the current file, if needed. Some tarballs don't include the top-level directory entry
+			err = os.MkdirAll(filepath.Dir(path), 0755|os.ModeDir)
+			if err != nil {
+				return errors.Wrapf(err, "mkdir %q failed", path)
+			}
 		}
 
 		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, fileInfo.Mode())
