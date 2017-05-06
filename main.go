@@ -122,7 +122,7 @@ func setGoRoot(baseDir string) {
 
 func downloadFile(url, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
-	err := os.MkdirAll(dir, os.ModeDir|0700)
+	err := os.MkdirAll(dir, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrapf(err, "mkdir %q failed", dir)
 	}
@@ -161,7 +161,7 @@ func extractFile(golangArchive, baseDir string) error {
 	_ = os.Remove(filepath.Join(baseDir, EXTRACTED_CANARY))
 
 	log.Debugf("Extracting %q", golangArchive)
-	err := os.MkdirAll(baseDir, os.ModeDir|0700)
+	err := os.MkdirAll(baseDir, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrapf(err, "mkdir %q failed", baseDir)
 	}
@@ -200,7 +200,7 @@ func extractFile(golangArchive, baseDir string) error {
 			continue
 		} else {
 			// Make directory containing the current file, if needed. Some tarballs don't include the top-level directory entry
-			err = os.MkdirAll(filepath.Dir(path), 0755|os.ModeDir)
+			err = os.MkdirAll(filepath.Dir(path), os.ModeDir|0755)
 			if err != nil {
 				return errors.Wrapf(err, "mkdir %q failed", path)
 			}
