@@ -9,20 +9,23 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 )
 
 const (
-	DEFAULT_DOWNLOAD_URL = "https://storage.googleapis.com/golang/go%s.%s-%s.tar.gz"
-	DEFAULT_GOOS         = runtime.GOOS
-	DEFAULT_GOARCH       = runtime.GOARCH
+	DEFAULT_DOWNLOAD_URL          = "https://storage.googleapis.com/golang/go%s.%s-%s.tar.gz"
+	DEFAULT_HOME_INSTALL_LOCATION = ".go"
+	DEFAULT_GOOS                  = runtime.GOOS
+	DEFAULT_GOARCH                = runtime.GOARCH
 
-	EXTRACTED_CANARY = "go-install"
+	EXTRACTED_CANARY = "go-extracted"
 )
 
 var goosFlag = flag.String("goos", DEFAULT_GOOS, "Go OS")
@@ -44,18 +47,19 @@ func main() {
 
 	version := ""
 	if len(flag.Args()) < 1 {
-		log.Fatal("Must provide go version: e.g., go-install 1.2.3")
+		log.Fatal("Must provide go version: e.g., run-go 1.8.1")
 	} else {
 		version = flag.Args()[0]
 	}
 
-	// baseDir of all file operations for this go version
-	baseDir := filepath.Join("go", version)
-
-	// Prepend provided path prefix to baseDir
-	if len(flag.Args()) == 2 {
-		baseDir = filepath.Join(flag.Args()[1], baseDir)
+	// Find the user's home directory
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		log.Fatal("Failed to determine home directory: %v", err)
 	}
+
+	// baseDir of all file operations for this go version
+	baseDir := filepath.Join(homeDir, DEFAULT_HOME_INSTALL_LOCATION, version)
 
 	// URL to download golangArchive
 	fileUrl := fmt.Sprintf(DEFAULT_DOWNLOAD_URL, version, goos, goarch)
@@ -63,11 +67,12 @@ func main() {
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
 
-	err := downloadFile(fileUrl, golangArchive)
+	err = downloadFile(fileUrl, golangArchive)
 	if err != nil {
 		log.Fatalf("Failed to download: %v", err)
 	}
 
+	// Extract golang archive
 	canaryFile := filepath.Join(baseDir, EXTRACTED_CANARY) // File that signals extraction has already occurred
 	if fileExists(canaryFile) {
 		log.Debugf("Skipping extraction due to presence of canary at %q", canaryFile)
@@ -79,6 +84,27 @@ func main() {
 		ioutil.WriteFile(canaryFile, []byte(""), 0755)
 		log.Infof("Successfully extracted %q", golangArchive)
 	}
+
+	// Run go command
+	if len(flag.Args()) > 1 {
+		err = runGo(baseDir, flag.Args()[1:])
+	} else {
+		err = runGo(baseDir, nil)
+	}
+	if err != nil {
+		log.Fatalf("go command failed: %v", err)
+	}
+}
+
+func runGo(baseDir string, args []string) error {
+	goBinary := filepath.Join(baseDir, "go", "bin", "go")
+	cmd := exec.Command(goBinary, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	log.Debugf("Executing %q with arguments %v", goBinary, args)
+	return cmd.Run()
 }
 
 func fileExists(path string) bool {
