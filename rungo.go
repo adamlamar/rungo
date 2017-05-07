@@ -32,7 +32,7 @@ func fileExists(path string) bool {
 }
 
 func setGoRoot(baseDir string) {
-	os.Setenv("GOROOT", baseDir)
+	os.Setenv("GOROOT", filepath.Join(baseDir, "go"))
 }
 
 func downloadFile(url, fileToSave string) error {
