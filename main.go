@@ -14,9 +14,8 @@ import (
 )
 
 const (
-	DEFAULT_HOME_INSTALL_LOCATION = ".go"
-	DEFAULT_GOOS                  = runtime.GOOS
-	DEFAULT_GOARCH                = runtime.GOARCH
+	DEFAULT_GOOS   = runtime.GOOS
+	DEFAULT_GOARCH = runtime.GOARCH
 
 	EXTRACTED_CANARY = "go-extracted"
 )
