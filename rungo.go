@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func RunGo(baseDir string, args []string) error {
+func runGo(baseDir string, args []string) error {
 	goBinary := filepath.Join(baseDir, "go", "bin", "go")
 	cmd := exec.Command(goBinary, args...)
 	cmd.Stdin = os.Stdin
@@ -23,7 +23,7 @@ func RunGo(baseDir string, args []string) error {
 	return cmd.Run()
 }
 
-func FileExists(path string) bool {
+func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
@@ -31,11 +31,11 @@ func FileExists(path string) bool {
 	return true
 }
 
-func SetGoRoot(baseDir string) {
+func setGoRoot(baseDir string) {
 	os.Setenv("GOROOT", baseDir)
 }
 
-func DownloadFile(url, fileToSave string) error {
+func downloadFile(url, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
 	err := os.MkdirAll(dir, os.ModeDir|0755)
 	if err != nil {

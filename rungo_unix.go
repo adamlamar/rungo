@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ExtractFile(golangArchive, baseDir string) error {
+func extractFile(golangArchive, baseDir string) error {
 	log.Debugf("Extracting %q", golangArchive)
 	err := os.MkdirAll(baseDir, os.ModeDir|0755)
 	if err != nil {

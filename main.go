@@ -11,7 +11,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/mitchellh/go-homedir"
-	"gitlab.com/adamlamar/run-go"
 )
 
 const (
@@ -62,20 +61,20 @@ func main() {
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
 
-	err = rungo.DownloadFile(fileUrl, golangArchive)
+	err = downloadFile(fileUrl, golangArchive)
 	if err != nil {
 		log.Fatalf("Failed to download: %v", err)
 	}
 
 	// Extract golang archive
 	canaryFile := filepath.Join(baseDir, EXTRACTED_CANARY) // File that signals extraction has already occurred
-	if rungo.FileExists(canaryFile) {
+	if fileExists(canaryFile) {
 		log.Debugf("Skipping extraction due to presence of canary at %q", canaryFile)
 	} else {
 		// Remove extracted canary, if exists
 		_ = os.Remove(filepath.Join(baseDir, EXTRACTED_CANARY))
 
-		err = rungo.ExtractFile(golangArchive, baseDir)
+		err = extractFile(golangArchive, baseDir)
 		if err != nil {
 			log.Fatalf("Failed to extract: %v", err)
 		}
@@ -84,11 +83,11 @@ func main() {
 	}
 
 	// Run go command
-	rungo.SetGoRoot(baseDir)
+	setGoRoot(baseDir)
 	if len(flag.Args()) > 1 {
-		err = rungo.RunGo(baseDir, flag.Args()[1:])
+		err = runGo(baseDir, flag.Args()[1:])
 	} else {
-		err = rungo.RunGo(baseDir, nil)
+		err = runGo(baseDir, nil)
 	}
 	if err != nil {
 		log.Fatalf("go command failed: %v", err)
