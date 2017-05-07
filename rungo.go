@@ -1,4 +1,4 @@
-package rungo
+package main
 
 import (
 	"fmt"

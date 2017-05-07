@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gitlab.com/adamlamar/run-go"
 	"io/ioutil"
 	"os"
 	"path"
@@ -12,6 +11,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/mitchellh/go-homedir"
+	"gitlab.com/adamlamar/run-go"
 )
 
 const (

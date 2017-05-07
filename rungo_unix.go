@@ -1,6 +1,6 @@
 // +build !windows
 
-package rungo
+package main
 
 import (
 	"archive/tar"
