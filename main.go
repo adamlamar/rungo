@@ -32,6 +32,7 @@ func main() {
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
+	log.SetFormatter(&log.TextFormatter{DisableColors: true})
 
 	// Flags
 	goos := *goosFlag
