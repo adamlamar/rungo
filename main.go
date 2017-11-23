@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -20,12 +19,9 @@ const (
 	EXTRACTED_CANARY = "go-extracted"
 )
 
-var verbose = flag.Bool("verbose", false, "Verbose output")
-
 func main() {
-	flag.Parse()
-
-	if *verbose {
+	verbose := os.Getenv("RUNGO_VERBOSE")
+	if verbose != "" {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
@@ -80,7 +76,7 @@ func main() {
 		binary = "go"
 	}
 
-	err = runGo(binary, baseDir, flag.Args())
+	err = runGo(binary, baseDir, os.Args[1:])
 	if err != nil {
 		log.Fatalf("command failed: %v", err)
 	}
