@@ -20,8 +20,6 @@ const (
 	EXTRACTED_CANARY = "go-extracted"
 )
 
-var goosFlag = flag.String("goos", DEFAULT_GOOS, "Go OS")
-var goarchFlag = flag.String("goarch", DEFAULT_GOARCH, "Go Architecture")
 var verbose = flag.Bool("verbose", false, "Verbose output")
 
 func main() {
@@ -34,15 +32,9 @@ func main() {
 	}
 	log.SetFormatter(&log.TextFormatter{DisableColors: true})
 
-	// Flags
-	goos := *goosFlag
-	goarch := *goarchFlag
-
-	version := ""
-	if len(flag.Args()) < 1 {
-		log.Fatal("Must provide go version: e.g., run-go 1.8.1")
-	} else {
-		version = flag.Args()[0]
+	version := os.Getenv("GO_VERSION")
+	if version == "" {
+		log.Fatal("Must set GO_VERSION")
 	}
 
 	// Find the user's home directory
@@ -55,7 +47,7 @@ func main() {
 	baseDir := filepath.Join(homeDir, DEFAULT_HOME_INSTALL_LOCATION, version)
 
 	// URL to download golangArchive
-	fileUrl := fmt.Sprintf(DEFAULT_DOWNLOAD_URL, version, goos, goarch)
+	fileUrl := fmt.Sprintf(DEFAULT_DOWNLOAD_URL, version, DEFAULT_GOOS, DEFAULT_GOARCH)
 
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
@@ -83,11 +75,7 @@ func main() {
 
 	// Run go command
 	setGoRoot(baseDir)
-	if len(flag.Args()) > 1 {
-		err = runGo(baseDir, flag.Args()[1:])
-	} else {
-		err = runGo(baseDir, nil)
-	}
+	err = runGo(baseDir, flag.Args())
 	if err != nil {
 		log.Fatalf("go command failed: %v", err)
 	}
