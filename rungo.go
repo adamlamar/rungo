@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func runGo(baseDir string, args []string) error {
-	goBinary := filepath.Join(baseDir, "go", "bin", "go")
+func runGo(binary, baseDir string, args []string) error {
+	goBinary := filepath.Join(baseDir, "go", "bin", binary)
 	cmd := exec.Command(goBinary, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

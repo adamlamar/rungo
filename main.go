@@ -75,8 +75,13 @@ func main() {
 
 	// Run go command
 	setGoRoot(baseDir)
-	err = runGo(baseDir, flag.Args())
+	binary := filepath.Base(os.Args[0])
+	if binary == "rungo" {
+		binary = "go"
+	}
+
+	err = runGo(binary, baseDir, flag.Args())
 	if err != nil {
-		log.Fatalf("go command failed: %v", err)
+		log.Fatalf("command failed: %v", err)
 	}
 }
