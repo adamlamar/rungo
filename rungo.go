@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,6 +22,59 @@ func runGo(binary, baseDir string, args []string) error {
 
 	log.Debugf("Executing %q with arguments %v", goBinary, args)
 	return cmd.Run()
+}
+
+// Get the requested version, either from env variable or go-version file
+func findVersion() string {
+	envVersion := findEnvVersion()
+	if envVersion != "" {
+		return envVersion
+	}
+
+	fileVersion := findVersionFile()
+	if fileVersion != "" {
+		return fileVersion
+	}
+
+	log.Fatal("Failed to determine desired go version")
+	return "system"
+}
+
+func findEnvVersion() string {
+	return os.Getenv("GO_VERSION")
+}
+
+func findVersionFile() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Debugf("Couldn't determine current working directory: %v", err)
+		return ""
+	}
+
+	currentDir := dir
+	for {
+		versionFileName := filepath.Join(currentDir, ".go-version")
+		versionFile, err := os.Open(versionFileName)
+		if err == nil {
+			scanner := bufio.NewScanner(versionFile)
+			version := ""
+			if scanner.Scan() { // Read a single line
+				version = scanner.Text()
+			}
+			_ = versionFile.Close()
+			if version != "" {
+				log.Debugf("Using version specification from %v", versionFileName)
+				return version
+			}
+		}
+
+		currentDir = filepath.Dir(currentDir)
+		if currentDir == filepath.Dir(currentDir) {
+			log.Debugf("Couldn't find any `.go-version` file in tree %v", dir)
+			return ""
+		}
+	}
+	return ""
 }
 
 func fileExists(path string) bool {

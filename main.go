@@ -28,10 +28,8 @@ func main() {
 	}
 	log.SetFormatter(&log.TextFormatter{DisableColors: true})
 
-	version := os.Getenv("GO_VERSION")
-	if version == "" {
-		log.Fatal("Must set GO_VERSION")
-	}
+	// Find the version requested
+	version := findVersion()
 
 	// Find the user's home directory
 	homeDir, err := homedir.Dir()
