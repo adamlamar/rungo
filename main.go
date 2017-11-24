@@ -34,7 +34,7 @@ func main() {
 	// Find the user's home directory
 	homeDir, err := homedir.Dir()
 	if err != nil {
-		log.Fatal("Failed to determine home directory: %v", err)
+		log.Fatalf("Failed to determine home directory: %v", err)
 	}
 
 	// baseDir of all file operations for this go version

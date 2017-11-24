@@ -74,7 +74,6 @@ func findVersionFile() string {
 			return ""
 		}
 	}
-	return ""
 }
 
 func fileExists(path string) bool {
