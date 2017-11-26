@@ -1,0 +1,16 @@
+sudo: required
+
+os:
+  - linux
+  - osx
+
+language: go
+
+services:
+  - docker
+
+script:
+  - go get -v
+  - go install
+  - GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8"
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t adamlamar/rungo .; fi
