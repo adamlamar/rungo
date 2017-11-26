@@ -1,4 +1,4 @@
-# rungo
+# rungo [![Build Status](https://travis-ci.org/adamlamar/rungo.svg?branch=master)](https://travis-ci.org/adamlamar/rungo)
 
 Simple shim to run the version of Go you need. Designed primarily for integration with automated build processes, but can fill development needs too.
 
