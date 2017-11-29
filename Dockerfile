@@ -11,8 +11,8 @@ ADD . src/github.com/adamlamar/rungo
 RUN go install github.com/adamlamar/rungo
 
 # Stage any downloaded tarballs
-RUN mkdir -p $HOME/.go
-RUN cp -r $GOPATH/src/github.com/adamlamar/rungo/go-releases/* $HOME/.go/
+RUN mkdir -p $HOME/.rungo
+RUN cp -r $GOPATH/src/github.com/adamlamar/rungo/go-releases/* $HOME/.rungo/
 
 # Verify the correct go versions are executed
 RUN GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8 linux/amd64"
