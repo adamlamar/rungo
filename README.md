@@ -47,7 +47,9 @@ $ rungo version
 go version go1.9.2 darwin/amd64
 ```
 
-Of course the `.go-version` file only needs to be written once. `rungo` searches for the first `.go-version` that exists from the current working directory upwards, so `.go-version` can be used on a per-project basis.
+The `.go-version` file only needs to be written once. `rungo` searches for the first `.go-version` that exists from the current working directory upwards, so `.go-version` can be used on a per-project basis.
+
+If no version is specified, `rungo` will attempt to invoke the system go installed under `/usr/local/go`.
 
 ## Platforms
 
