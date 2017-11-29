@@ -36,7 +36,6 @@ func findVersion() string {
 		return fileVersion
 	}
 
-	log.Fatal("Failed to determine desired go version")
 	return "system"
 }
 
