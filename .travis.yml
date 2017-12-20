@@ -12,7 +12,7 @@ script:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t adamlamar/rungo .; fi
 
 before_deploy:
-- tar czf rungo-$TRAVIS_TAG-$TRAVIS_OS_NAME.tar.gz $GOPATH/bin/rungo
+- tar czf rungo-$TRAVIS_TAG-$TRAVIS_OS_NAME.tar.gz -C $GOPATH/bin rungo
 
 deploy:
   provider: releases
