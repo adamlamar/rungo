@@ -17,3 +17,4 @@ deploy:
   file: rungo
   on:
     repo: adamlamar/rungo
+    tags: true
