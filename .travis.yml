@@ -1,16 +1,25 @@
 sudo: required
-
 os:
-  - linux
-  - osx
-
+- linux
+- osx
 language: go
-
 services:
-  - docker
-
+- docker
 script:
-  - go get -v
-  - go install
-  - GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8"
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t adamlamar/rungo .; fi
+- go get -v
+- go install
+- GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8"
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t adamlamar/rungo .; fi
+
+before_deploy:
+- tar czf rungo-$TRAVIS_TAG-$TRAVIS_OS_NAME.tar.gz -C $GOPATH/bin rungo
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: Q66rlMDgy6a4NiK9hSme4pS592AFfkHFEd9XtCx/BcE/z+AKwMkBfwYXlsyqYGyyS5sRK/zFPCRCbtoWVnt+Pasm/s29Hr2CvZCWsEo262UoJGT6Y1rqFZ2PxWIlWOKe9ZWWuFTFz6PS4FFCux0CRahxpTHOztXav3xk3uOWaoCAnbNPdI0CoGFUwOGxAJYHwB/5Z01OSYQa36/TO8nuwJbCy7QDOrBNXwpZW2AEReaArIBV9PFT75QcPvqccA4RNBOuHLNuso5xelWG+Tbu/6W1bTJkJWXw3aVpF6wD2Uek16BIKexyOr7VzOz6AnSPo674pggx259CknQCclm+628MBl+QOXcNeOXV3R2hpHu5nEcOX9/Wm5u8TCWEwEYfKgwkfNQDazkizq7QNejoS33knWhcOe8MI7lO6J3O8lZIYfOjFX3L9ii1J38pwWHfcnWdrBRQD6b5JZFdkt6cOtZHa9CEdbjw//Wlqj0krZEoZWMCUI9F7O40PaZQim8e6LwjrzRpD4fHsATVQvK8UbSHP+QYYOBLKNishl1qV4qSi13MnC4dZwGoJWjgd8kjL7H0xXY62UdcihkVMqjpCfMOyGB/7zBd7WdCMBh+2D3BPXCPCzzXMH96bEoog2AXrL1Xrz+ZVgBAUipJSVMKnPCr7fUx6ttVaqkZXWVQCyk=
+  file: rungo-$TRAVIS_TAG-$TRAVIS_OS_NAME.tar.gz
+  on:
+    repo: adamlamar/rungo
+    tags: true
