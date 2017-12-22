@@ -17,6 +17,7 @@ const (
 	DEFAULT_GOARCH = runtime.GOARCH
 
 	EXTRACTED_CANARY = "go-extracted"
+	RUNGO_VERSION    = "0.0.1"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 	log.SetFormatter(&log.TextFormatter{DisableColors: true})
+	log.Debugf("Starting rungo version %s", RUNGO_VERSION)
 
 	// Find the version requested
 	version := findVersion()
