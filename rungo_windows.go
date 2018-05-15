@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
