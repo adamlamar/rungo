@@ -18,7 +18,7 @@ const (
 	DEFAULT_GOARCH = runtime.GOARCH
 
 	EXTRACTED_CANARY = "go-extracted"
-	RUNGO_VERSION    = "0.0.1"
+	RUNGO_VERSION    = "0.0.2"
 )
 
 func main() {
