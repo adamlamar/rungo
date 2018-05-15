@@ -6,23 +6,11 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 )
-
-func runGo(binary, baseDir string, args []string) error {
-	goBinary := filepath.Join(baseDir, "go", "bin", binary)
-	cmd := exec.Command(goBinary, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	log.Debugf("Executing %q with arguments %v", goBinary, args)
-	return cmd.Run()
-}
 
 // Get the requested version, either from env variable or go-version file
 func findVersion() string {
