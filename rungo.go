@@ -36,7 +36,7 @@ func findVersion() string {
 		return fileVersion
 	}
 
-	return "system"
+	return DEFAULT_GOLANG
 }
 
 func findEnvVersion() string {

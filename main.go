@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	DEFAULT_GOLANG = "1.10.2"
 	DEFAULT_GOOS   = runtime.GOOS
 	DEFAULT_GOARCH = runtime.GOARCH
 
@@ -48,29 +49,25 @@ func main() {
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
 
-	if version != "system" {
-		err = downloadFile(fileUrl, golangArchive)
-		if err != nil {
-			log.Fatalf("Failed to download: %v", err)
-		}
+	err = downloadFile(fileUrl, golangArchive)
+	if err != nil {
+		log.Fatalf("Failed to download: %v", err)
+	}
 
-		// Extract golang archive
-		canaryFile := filepath.Join(baseDir, EXTRACTED_CANARY) // File that signals extraction has already occurred
-		if fileExists(canaryFile) {
-			log.Debugf("Skipping extraction due to presence of canary at %q", canaryFile)
-		} else {
-			// Remove extracted canary, if exists
-			_ = os.Remove(filepath.Join(baseDir, EXTRACTED_CANARY))
-
-			err = extractFile(golangArchive, baseDir)
-			if err != nil {
-				log.Fatalf("Failed to extract: %v", err)
-			}
-			ioutil.WriteFile(canaryFile, []byte(""), 0755)
-			log.Infof("Successfully extracted %q", golangArchive)
-		}
+	// Extract golang archive
+	canaryFile := filepath.Join(baseDir, EXTRACTED_CANARY) // File that signals extraction has already occurred
+	if fileExists(canaryFile) {
+		log.Debugf("Skipping extraction due to presence of canary at %q", canaryFile)
 	} else {
-		baseDir = "/usr/local"
+		// Remove extracted canary, if exists
+		_ = os.Remove(filepath.Join(baseDir, EXTRACTED_CANARY))
+
+		err = extractFile(golangArchive, baseDir)
+		if err != nil {
+			log.Fatalf("Failed to extract: %v", err)
+		}
+		ioutil.WriteFile(canaryFile, []byte(""), 0755)
+		log.Infof("Successfully extracted %q", golangArchive)
 	}
 
 	// Run go command
@@ -82,10 +79,6 @@ func main() {
 
 	err = runGo(binary, baseDir, os.Args[1:])
 	if err != nil {
-		if version == "system" {
-			log.Fatalf("Failed to run system go: %v", err)
-		} else {
-			log.Fatalf("command failed: %v", err)
-		}
+		log.Fatalf("command failed: %v", err)
 	}
 }
