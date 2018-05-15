@@ -4,11 +4,23 @@ import (
 	"archive/zip"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 )
+
+func runGo(binary, baseDir string, args []string) error {
+	goBinary := filepath.Join(baseDir, "go", "bin", binary)
+	cmd := exec.Command(goBinary, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	log.Debugf("Executing %q with arguments %v", goBinary, args)
+	return cmd.Run()
+}
 
 func extractFile(golangArchive, baseDir string) error {
 	log.Debugf("Extracting %q", golangArchive)

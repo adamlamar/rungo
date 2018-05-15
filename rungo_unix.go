@@ -8,10 +8,20 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 )
+
+func runGo(binary, baseDir string, args []string) error {
+	goBinary := filepath.Join(baseDir, "go", "bin", binary)
+	binaryWithArgs := append([]string{goBinary}, args...)
+
+	log.Debugf("Executing %q with arguments %v", goBinary, args)
+	// generally won't return
+	return syscall.Exec(goBinary, binaryWithArgs, os.Environ())
+}
 
 func extractFile(golangArchive, baseDir string) error {
 	log.Debugf("Extracting %q", golangArchive)
