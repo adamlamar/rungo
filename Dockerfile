@@ -17,12 +17,12 @@ RUN cp -r $GOPATH/src/github.com/adamlamar/rungo/go-releases/* $HOME/.rungo/
 # Verify the correct go versions are executed
 RUN GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8 linux/amd64"
 RUN echo "1.9.1" > $GOPATH/.go-version && $GOPATH/bin/rungo version | grep "go version go1.9.1 linux/amd64" && rm $GOPATH/.go-version
-# TODO: test system version
-# RUN $GOPATH/bin/rungo version | grep "go version go1.9.2 linux/amd64"
 
 # Create "binstubs" for multi binary support
 RUN ln -s $GOPATH/bin/rungo $GOPATH/bin/go && ln -s $GOPATH/bin/rungo $GOPATH/bin/godoc && ln -s $GOPATH/bin/rungo $GOPATH/bin/gofmt
 
 RUN GO_VERSION=1.9.2 $GOPATH/bin/go version | grep "go version go1.9.2 linux/amd64"
 RUN GO_VERSION=1.9.2 $GOPATH/bin/godoc -q longstringthatdoesntexist
-RUN echo "package main" | GO_VERSION=1.9.2 $GOPATH/bin/gofmt
+
+RUN GO_VERSION=1.10.2 $GOPATH/bin/go version | grep "go version go1.10.2 linux/amd64"
+RUN echo "package main" | GO_VERSION=1.10.2 $GOPATH/bin/gofmt
