@@ -4,12 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+)
+
+const (
+	DOWNLOADED_CANARY = "go-downloaded"
 )
 
 // Get the requested version, either from env variable or go-version file
@@ -77,6 +82,7 @@ func setGoRoot(baseDir string) {
 
 func downloadFile(url, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
+	canaryFile := filepath.Join(dir, DOWNLOADED_CANARY)
 	err := os.MkdirAll(dir, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrapf(err, "mkdir %q failed", dir)
@@ -84,8 +90,15 @@ func downloadFile(url, fileToSave string) error {
 
 	file, err := os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0755)
 	if os.IsExist(err) {
-		log.Debugf("File %q already exists, skipping download", fileToSave)
-		return nil
+		if fileExists(canaryFile) {
+			log.Debugf("File %q already exists, skipping download", fileToSave)
+			return nil
+		}
+		log.Infof("File %q exists, but was not fully downloaded, so will re-download", fileToSave)
+		file, err = os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR, 0755)
+		if err != nil {
+			return errors.Wrapf(err, "open partially-downloaded %q failed", fileToSave)
+		}
 	} else if err != nil {
 		return errors.Wrapf(err, "open %q failed", fileToSave)
 	}
@@ -108,5 +121,7 @@ func downloadFile(url, fileToSave string) error {
 		return errors.Wrap(err, "copy to disk failed")
 	}
 
+	// if download is complete, write the canary file for success
+	ioutil.WriteFile(canaryFile, []byte(""), 0755)
 	return nil
 }
