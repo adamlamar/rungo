@@ -88,5 +88,11 @@ There are none.
 ### How can I turn on debug logging?
 Set the environment variable `RUNGO_VERBOSE` to any value. Example: `RUNGO_VERBOSE=t go version`
 
+### How do I recover disk space used by rungo?
+Delete the versioned directory you don't need anymore in `~/.rungo/<version>`
+
+### How do I clear rungo's cache completely?
+`rm -rf ~/.rungo`
+
 ### How does rungo work?
 `rungo` "replaces" the golang binaries that would normally reside in your `$PATH`. For each command that `rungo` instruments, a symlink is used to point back to the `rungo` binary. On startup, `rungo` reads the basename of the program (i.e. the symlink name) and uses that to determine which follow-on command should be invoked. After that, `rungo` determines the appropriate version (downloading if necessary) and exec's with the expected arguments.
