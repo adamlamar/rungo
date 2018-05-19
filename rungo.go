@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -80,6 +80,26 @@ func setGoRoot(baseDir string) {
 	os.Setenv("GOROOT", filepath.Join(baseDir, "go"))
 }
 
+// could refactor this to download bytes and be re-usable for the tar file itself
+func downloadSha(url string) (string, error) {
+	log.Debugf("Downloading sha file %s", url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", errors.Wrap(err, "download of sha failed")
+	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return "", fmt.Errorf("failed due to non-2XX response: %q", resp.Status)
+	}
+	defer resp.Body.Close()
+
+	fileBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.Wrap(err, "could not read bytes from response into buffer")
+	}
+
+	return fmt.Sprintf("%s", fileBody), nil
+}
+
 func downloadFile(url, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
 	canaryFile := filepath.Join(dir, DOWNLOADED_CANARY)
@@ -104,6 +124,13 @@ func downloadFile(url, fileToSave string) error {
 	}
 	defer file.Close()
 
+	// Download the expected shasum
+	expectedSum, err := downloadSha(url + ".sha256")
+	if err != nil {
+		return errors.Wrap(err, "download expected sha256 failed")
+	}
+	log.Debugf("Expected sum: %s", expectedSum)
+
 	// Download file
 	log.Infof("Downloading file %s", url)
 	resp, err := http.Get(url)
@@ -115,10 +142,23 @@ func downloadFile(url, fileToSave string) error {
 	}
 	defer resp.Body.Close()
 
-	// Write file to disk
-	_, err = io.Copy(file, resp.Body)
+	// Read file to buffer, then write to disk
+	fileBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "could not read bytes from response into buffer")
+	}
+	_, err = file.Write(fileBody)
 	if err != nil {
 		return errors.Wrap(err, "copy to disk failed")
+	}
+
+	// Calculate the shasum for the downloaded file, and compare to expected
+	sumBytes := sha256.Sum256(fileBody)
+	sumStr := fmt.Sprintf("%x", sumBytes)
+	log.Debugf("Calculated Sum: %s", sumStr)
+
+	if expectedSum != sumStr {
+		return fmt.Errorf("Downloaded SHA256 did not match.  Expected %s but calculated %s", expectedSum, sumStr)
 	}
 
 	// if download is complete, write the canary file for success
