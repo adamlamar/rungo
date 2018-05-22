@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -80,9 +82,39 @@ func setGoRoot(baseDir string) {
 	os.Setenv("GOROOT", filepath.Join(baseDir, "go"))
 }
 
-// could refactor this to download bytes and be re-usable for the tar file itself
-func downloadSha(url string) (string, error) {
-	log.Debugf("Downloading sha file %s", url)
+// Returns the sha256 for this url. Downloads if necessary
+func fetchSha256(url, fileToSave string) (string, error) {
+	dir := filepath.Dir(fileToSave)
+	err := os.MkdirAll(dir, os.ModeDir|0755)
+	if err != nil {
+		return "", errors.Wrapf(err, "mkdir %q failed", dir)
+	}
+
+	// Return the hex-encoded sha256, which is double the size of the unencoded version
+	shaSum := make([]byte, sha256.Size*2)
+	file, err := os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0755)
+
+	// If the file exists, re-open to read the sha256 from the file.
+	// Otherwise download and write to disk.
+	if os.IsExist(err) {
+		log.Debugf("Found sha256 file at %q", fileToSave)
+		shaFile, err := os.Open(fileToSave)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to open sha256 file")
+		}
+		defer shaFile.Close()
+
+		_, err = io.ReadAtLeast(shaFile, shaSum, len(shaSum))
+		if err != nil {
+			return "", errors.Wrap(err, "could not read sha256 from file")
+		}
+		return string(shaSum), nil
+	} else if err != nil {
+		return "", errors.Wrapf(err, "open %q failed", fileToSave)
+	}
+	defer file.Close()
+
+	log.Debugf("Downloading sha256 file %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", errors.Wrap(err, "download of sha failed")
@@ -92,15 +124,21 @@ func downloadSha(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	fileBody, err := ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAtLeast(resp.Body, shaSum, len(shaSum))
 	if err != nil {
 		return "", errors.Wrap(err, "could not read bytes from response into buffer")
 	}
 
-	return fmt.Sprintf("%s", fileBody), nil
+	// Write the sha to the file we opened earlier
+	_, err = file.Write(shaSum)
+	if err != nil {
+		// Technically we could continue since we have the sha256. This fails early instead.
+		return "", errors.Wrap(err, "failed to write sha256")
+	}
+	return string(shaSum), nil
 }
 
-func downloadFile(url, fileToSave string) error {
+func downloadFile(url, expectedSha256, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
 	canaryFile := filepath.Join(dir, DOWNLOADED_CANARY)
 	err := os.MkdirAll(dir, os.ModeDir|0755)
@@ -124,13 +162,6 @@ func downloadFile(url, fileToSave string) error {
 	}
 	defer file.Close()
 
-	// Download the expected shasum
-	expectedSum, err := downloadSha(url + ".sha256")
-	if err != nil {
-		return errors.Wrap(err, "download expected sha256 failed")
-	}
-	log.Debugf("Expected sum: %s", expectedSum)
-
 	// Download file
 	log.Infof("Downloading file %s", url)
 	resp, err := http.Get(url)
@@ -142,26 +173,23 @@ func downloadFile(url, fileToSave string) error {
 	}
 	defer resp.Body.Close()
 
-	// Read file to buffer, then write to disk
-	fileBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "could not read bytes from response into buffer")
-	}
-	_, err = file.Write(fileBody)
+	// Write to disk and calculate sha256
+	hasher := sha256.New()
+	writer := io.MultiWriter(file, hasher)
+
+	_, err = io.Copy(writer, resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "copy to disk failed")
 	}
 
-	// Calculate the shasum for the downloaded file, and compare to expected
-	sumBytes := sha256.Sum256(fileBody)
-	sumStr := fmt.Sprintf("%x", sumBytes)
-	log.Debugf("Calculated Sum: %s", sumStr)
-
-	if expectedSum != sumStr {
-		return fmt.Errorf("Downloaded SHA256 did not match.  Expected %s but calculated %s", expectedSum, sumStr)
+	// Compare expected and actual sha256
+	actualSha256 := hex.EncodeToString(hasher.Sum(nil))
+	if actualSha256 != expectedSha256 {
+		return fmt.Errorf("failed to verify archive from %s: expected sha256 %s but calculated %s", url, expectedSha256, actualSha256)
 	}
 
 	// if download is complete, write the canary file for success
 	ioutil.WriteFile(canaryFile, []byte(""), 0755)
+	log.Debugf("Successfully downloaded %s with sha256 %s", url, actualSha256)
 	return nil
 }
