@@ -18,6 +18,7 @@ const (
 	DEFAULT_GOARCH = runtime.GOARCH
 
 	EXTRACTED_CANARY = "go-extracted"
+	SHA_EXTENSION    = ".sha256"
 	RUNGO_VERSION    = "0.0.3"
 )
 
@@ -49,7 +50,12 @@ func main() {
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
 
-	err = downloadFile(fileUrl, golangArchive)
+	sha256sum, err := fetchSha256(fileUrl+SHA_EXTENSION, golangArchive+SHA_EXTENSION)
+	if err != nil {
+		log.Fatalf("Failed to fetch sha256: %v", err)
+	}
+
+	err = downloadFile(fileUrl, sha256sum, golangArchive)
 	if err != nil {
 		log.Fatalf("Failed to download: %v", err)
 	}
