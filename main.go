@@ -73,7 +73,7 @@ func main() {
 			log.Fatalf("Failed to extract: %v", err)
 		}
 		ioutil.WriteFile(canaryFile, []byte(""), 0755)
-		log.Infof("Successfully extracted %q", golangArchive)
+		log.Debugf("Successfully extracted %q", golangArchive)
 	}
 
 	// Run go command

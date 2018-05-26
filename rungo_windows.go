@@ -23,7 +23,7 @@ func runGo(binary, baseDir string, args []string) error {
 }
 
 func extractFile(golangArchive, baseDir string) error {
-	log.Debugf("Extracting %q", golangArchive)
+	log.Infof("Extracting %q", golangArchive)
 	err := os.MkdirAll(baseDir, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrapf(err, "mkdir %q failed", baseDir)

@@ -110,7 +110,7 @@ func fetchSha256(url, fileToSave string) (string, error) {
 	}
 	defer file.Close()
 
-	log.Debugf("Downloading sha256 file %s", url)
+	log.Infof("Downloading sha256 file %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", errors.Wrap(err, "download of sha failed")
