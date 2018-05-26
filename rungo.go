@@ -15,10 +15,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	DOWNLOADED_CANARY = "go-downloaded"
-)
-
 // Get the requested version, either from env variable or go-version file
 func findVersion() string {
 	envVersion := findEnvVersion()
@@ -140,27 +136,16 @@ func fetchSha256(url, fileToSave string) (string, error) {
 
 func downloadFile(url, expectedSha256, fileToSave string) error {
 	dir := filepath.Dir(fileToSave)
-	canaryFile := filepath.Join(dir, DOWNLOADED_CANARY)
 	err := os.MkdirAll(dir, os.ModeDir|0755)
 	if err != nil {
 		return errors.Wrapf(err, "mkdir %q failed", dir)
 	}
 
-	file, err := os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0755)
-	if os.IsExist(err) {
-		if fileExists(canaryFile) {
-			log.Debugf("File %q already exists, skipping download", fileToSave)
-			return nil
-		}
-		log.Infof("File %q exists, but was not fully downloaded, so will re-download", fileToSave)
-		file, err = os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR, 0755)
-		if err != nil {
-			return errors.Wrapf(err, "open partially-downloaded %q failed", fileToSave)
-		}
-	} else if err != nil {
-		return errors.Wrapf(err, "open %q failed", fileToSave)
+	_, err = os.Stat(fileToSave)
+	if !os.IsNotExist(err) {
+		log.Debugf("File %q already exists, skipping download", fileToSave)
+		return nil // file exists
 	}
-	defer file.Close()
 
 	// Download file
 	log.Infof("Downloading file %s", url)
@@ -173,13 +158,23 @@ func downloadFile(url, expectedSha256, fileToSave string) error {
 	}
 	defer resp.Body.Close()
 
+	// Open in-progress file to hold partial contents
+	inProgressFile, err := ioutil.TempFile(dir, "golang-download")
+	if err != nil {
+		return errors.Wrap(err, "failed to open in-progress download file")
+	}
+
 	// Write to disk and calculate sha256
 	hasher := sha256.New()
-	writer := io.MultiWriter(file, hasher)
+	writer := io.MultiWriter(inProgressFile, hasher)
 
 	_, err = io.Copy(writer, resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "copy to disk failed")
+	}
+	err = inProgressFile.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close in-progress download file")
 	}
 
 	// Compare expected and actual sha256
@@ -188,8 +183,11 @@ func downloadFile(url, expectedSha256, fileToSave string) error {
 		return fmt.Errorf("failed to verify archive from %s: expected sha256 %s but calculated %s", url, expectedSha256, actualSha256)
 	}
 
-	// if download is complete, write the canary file for success
-	ioutil.WriteFile(canaryFile, []byte(""), 0755)
+	// if download is complete, move the in-progress file to complete
+	err = os.Rename(inProgressFile.Name(), fileToSave)
+	if err != nil {
+		return errors.Wrap(err, "failed to move in-progress file")
+	}
 	log.Debugf("Successfully downloaded %s with sha256 %s", url, actualSha256)
 	return nil
 }
