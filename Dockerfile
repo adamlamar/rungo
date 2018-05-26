@@ -7,6 +7,11 @@ RUN go get -v -u github.com/pkg/errors
 
 ADD . src/github.com/adamlamar/rungo
 
+# Build supported binaries
+RUN go build github.com/adamlamar/rungo
+RUN GOOS=darwin go build github.com/adamlamar/rungo
+RUN GOOS=windows go build github.com/adamlamar/rungo
+
 # Build binary in $GOPATH/bin/
 RUN go install github.com/adamlamar/rungo
 
