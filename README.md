@@ -96,3 +96,8 @@ Delete the versioned directory you don't need anymore in `~/.rungo/<version>`
 
 ### How does rungo work?
 `rungo` "replaces" the golang binaries that would normally reside in your `$PATH`. For each command that `rungo` instruments, a symlink is used to point back to the `rungo` binary. On startup, `rungo` reads the basename of the program (i.e. the symlink name) and uses that to determine which follow-on command should be invoked. After that, `rungo` determines the appropriate version (downloading if necessary) and exec's with the expected arguments.
+
+### What is the oldest version of go supported by rungo?
+On OSX, 1.5.4.
+
+On Linux/Windows, 1.2.2.
