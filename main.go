@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DEFAULT_GOLANG = "1.10.2"
+	DEFAULT_GOLANG = "1.10.3"
 	DEFAULT_GOOS   = runtime.GOOS
 	DEFAULT_GOARCH = runtime.GOARCH
 
