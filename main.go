@@ -19,7 +19,7 @@ const (
 
 	EXTRACTED_CANARY = "go-extracted"
 	SHA_EXTENSION    = ".sha256"
-	RUNGO_VERSION    = "0.0.4"
+	RUNGO_VERSION    = "0.0.5"
 )
 
 func main() {
