@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	DEFAULT_GOLANG = "1.10.3"
-	DEFAULT_GOOS   = runtime.GOOS
-	DEFAULT_GOARCH = runtime.GOARCH
+	DEFAULT_GOLANG        = "1.10.3"
+	DEFAULT_GOOS          = runtime.GOOS
+	DEFAULT_GOARCH        = runtime.GOARCH
+	DEFAULT_DOWNLOAD_BASE = "https://storage.googleapis.com/golang/"
 
 	EXTRACTED_CANARY = "go-extracted"
 	SHA_EXTENSION    = ".sha256"
@@ -44,8 +45,12 @@ func main() {
 	// baseDir of all file operations for this go version
 	baseDir := filepath.Join(homeDir, DEFAULT_HOME_INSTALL_LOCATION, version)
 
-	// URL to download golangArchive
-	fileUrl := fmt.Sprintf(DEFAULT_DOWNLOAD_URL, version, DEFAULT_GOOS, DEFAULT_GOARCH)
+	// Form URL to download golangArchive
+	downloadBase := os.Getenv("RUNGO_DOWNLOAD_BASE")
+	if downloadBase == "" {
+		downloadBase = DEFAULT_DOWNLOAD_BASE
+	}
+	fileUrl := downloadBase + fmt.Sprintf(DEFAULT_ARCHIVE_NAME, version, DEFAULT_GOOS, DEFAULT_GOARCH)
 
 	// Location on the filesystem to store the golang archive
 	golangArchive := filepath.Join(baseDir, path.Base(fileUrl))
