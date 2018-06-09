@@ -12,7 +12,6 @@ script:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     # Run integration tests
     docker build -t adamlamar/rungo .
-
     # Compile all supported releases
     mkdir -p releases/linux/amd64 releases/linux/386 releases/darwin/amd64 releases/windows/amd64 releases/windows/386
     GOOS=linux GOARCH=amd64 go build -o releases/linux/amd64/rungo
