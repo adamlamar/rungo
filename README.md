@@ -88,6 +88,9 @@ There are none.
 ### How can I turn on debug logging?
 Set the environment variable `RUNGO_VERBOSE` to any value. Example: `RUNGO_VERBOSE=t go version`
 
+### How can I download Go from an alternate server?
+By default, golang archives are downloaded from `https://storage.googleapis.com/golang/`. To use an alternative server, set `RUNGO_DOWNLOAD_BASE` to another value like `https://my.local.network/golang/`. Don't forget the trailing `/`.
+
 ### How do I recover disk space used by rungo?
 Delete the versioned directory you don't need anymore in `~/.rungo/<version>`
 
