@@ -88,27 +88,24 @@ func fetchSha256(url, fileToSave string) (string, error) {
 
 	// Return the hex-encoded sha256, which is double the size of the unencoded version
 	shaSum := make([]byte, sha256.Size*2)
-	file, err := os.OpenFile(fileToSave, os.O_CREATE|os.O_RDWR|os.O_EXCL, 0755)
 
 	// If the file exists, re-open to read the sha256 from the file.
 	// Otherwise download and write to disk.
-	if os.IsExist(err) {
-		log.Debugf("Found sha256 file at %q", fileToSave)
-		shaFile, err := os.Open(fileToSave)
-		if err != nil {
-			return "", errors.Wrap(err, "failed to open sha256 file")
-		}
-		defer shaFile.Close()
-
-		_, err = io.ReadAtLeast(shaFile, shaSum, len(shaSum))
-		if err != nil {
-			return "", errors.Wrap(err, "could not read sha256 from file")
-		}
-		return string(shaSum), nil
-	} else if err != nil {
+	file, err := os.OpenFile(fileToSave, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
 		return "", errors.Wrapf(err, "open %q failed", fileToSave)
 	}
 	defer file.Close()
+
+	if err != nil {
+		return "", errors.Wrap(err, "failed to open sha256 file")
+	}
+
+	_, err = io.ReadAtLeast(file, shaSum, len(shaSum))
+	if err == nil {
+		return string(shaSum), nil
+	}
+	log.Debugf("Failed to read sha256 file: %v", err)
 
 	log.Infof("Downloading sha256 file %s", url)
 	resp, err := http.Get(url)
