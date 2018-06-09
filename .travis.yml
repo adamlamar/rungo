@@ -9,17 +9,17 @@ script:
 - go get -v
 - go install
 - GO_VERSION=1.8 $GOPATH/bin/rungo version | grep "go version go1.8"
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    # Run integration tests
-    docker build -t adamlamar/rungo .
-    # Compile all supported releases
-    mkdir -p releases/linux/amd64 releases/linux/386 releases/darwin/amd64 releases/windows/amd64 releases/windows/386
-    GOOS=linux GOARCH=amd64 go build -o releases/linux/amd64/rungo
-    GOOS=linux GOARCH=386 go build -o releases/linux/386/rungo
-    GOOS=darwin GOARCH=amd64 go build -o releases/darwin/amd64/rungo
-    GOOS=windows GOARCH=amd64 go build -o releases/windows/amd64/rungo
-    GOOS=windows GOARCH=386 go build -o releases/windows/386/rungo
-  fi
+#- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+#    # Run integration tests
+#    docker build -t adamlamar/rungo .
+#    # Compile all supported releases
+#    mkdir -p releases/linux/amd64 releases/linux/386 releases/darwin/amd64 releases/windows/amd64 releases/windows/386
+#    GOOS=linux GOARCH=amd64 go build -o releases/linux/amd64/rungo
+#    GOOS=linux GOARCH=386 go build -o releases/linux/386/rungo
+#    GOOS=darwin GOARCH=amd64 go build -o releases/darwin/amd64/rungo
+#    GOOS=windows GOARCH=amd64 go build -o releases/windows/amd64/rungo
+#    GOOS=windows GOARCH=386 go build -o releases/windows/386/rungo
+#  fi
 
 before_deploy:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
