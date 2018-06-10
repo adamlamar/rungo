@@ -49,7 +49,7 @@ Or commit to your git repository on a per-project basis:
 ```
 $ cd path/to/my-project
 $ echo "1.9.2" > .go-version
-$ git commit .go-version
+$ git add .go-version && git commit
 $ git push
 # => All users of your project will now use the exact version specified
 ```
@@ -68,6 +68,7 @@ At a minimum, `rungo` can build on 1.5, but may work on prior versions. Note tha
 
 ## Manual Installation on Linux
 
+Build the `rungo` binary, or [download the latest stable release](https://github.com/adamlamar/rungo/releases/latest).
 Once you have the `rungo` binary, copy it somewhere in your path like `/usr/local/bin`. Then symlink the 3 go commands to the `rungo` binary.
 Like this:
 
@@ -79,6 +80,17 @@ Like this:
 ```
 
 Done! You should be able to invoke `go`, `gofmt`, and `godoc` as desired.
+
+## Manual Installation on Windows
+
+Build the `rungo.exe` binary, or [download the latest stable release](https://github.com/adamlamar/rungo/releases/latest).
+
+Extract the latest release zip file to a temporary directory. For a quick installation, copy the extracted files (go.exe, gofmt.exe, godoc.exe)
+into `C:\Windows` which will make them automatically part of your path.
+
+For a cleaner installation, copy the extracted files to a different directory and add it to your PATH.
+
+If building `rungo.exe` manually, copy `rungo.exe` to each of `go.exe`, `gofmt.exe`, and `godoc.exe` to the desired directory.
 
 ## FAQ
 
