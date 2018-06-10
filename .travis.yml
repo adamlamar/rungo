@@ -21,7 +21,7 @@ script:
     GOOS=windows GOARCH=amd64 go build -o releases/windows/amd64/rungo.exe
     (cd releases/windows/amd64 && cp rungo.exe go.exe && cp rungo.exe gofmt.exe && cp rungo.exe godoc.exe)
     GOOS=windows GOARCH=386 go build -o releases/windows/386/rungo.exe
-    (cd releases/windows/amd64 && cp rungo.exe go.exe && cp rungo.exe gofmt.exe && cp rungo.exe godoc.exe)
+    (cd releases/windows/386 && cp rungo.exe go.exe && cp rungo.exe gofmt.exe && cp rungo.exe godoc.exe)
   fi
 
 before_deploy:
