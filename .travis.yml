@@ -18,8 +18,10 @@ script:
     GOOS=linux GOARCH=amd64 go build -o releases/linux/amd64/rungo
     GOOS=linux GOARCH=386 go build -o releases/linux/386/rungo
     GOOS=darwin GOARCH=amd64 go build -o releases/darwin/amd64/rungo
-    GOOS=windows GOARCH=amd64 go build -o releases/windows/amd64/rungo
-    GOOS=windows GOARCH=386 go build -o releases/windows/386/rungo
+    GOOS=windows GOARCH=amd64 go build -o releases/windows/amd64/rungo.exe
+    (cd releases/windows/amd64 && cp rungo.exe go.exe && cp rungo.exe gofmt.exe && cp rungo.exe godoc.exe)
+    GOOS=windows GOARCH=386 go build -o releases/windows/386/rungo.exe
+    (cd releases/windows/386 && cp rungo.exe go.exe && cp rungo.exe gofmt.exe && cp rungo.exe godoc.exe)
   fi
 
 before_deploy:
@@ -28,8 +30,8 @@ before_deploy:
     tar czf rungo-$TRAVIS_TAG-linux-amd64.tar.gz -C releases/linux/amd64 rungo
     tar czf rungo-$TRAVIS_TAG-linux-386.tar.gz -C releases/linux/386 rungo
     tar czf rungo-$TRAVIS_TAG-osx-amd64.tar.gz -C releases/darwin/amd64 rungo
-    tar czf rungo-$TRAVIS_TAG-windows-amd64.tar.gz -C releases/windows/amd64 rungo
-    tar czf rungo-$TRAVIS_TAG-windows-386.tar.gz -C releases/windows/386 rungo
+    zip -j rungo-$TRAVIS_TAG-windows-amd64.zip releases/windows/amd64/go.exe releases/windows/amd64/gofmt.exe releases/windows/amd64/godoc.exe
+    zip -j rungo-$TRAVIS_TAG-windows-386.zip releases/windows/386/go.exe releases/windows/386/gofmt.exe releases/windows/386/godoc.exe
   fi
 
 deploy:
@@ -41,8 +43,8 @@ deploy:
   - rungo-$TRAVIS_TAG-linux-amd64.tar.gz
   - rungo-$TRAVIS_TAG-linux-386.tar.gz
   - rungo-$TRAVIS_TAG-osx-amd64.tar.gz
-  - rungo-$TRAVIS_TAG-windows-amd64.tar.gz
-  - rungo-$TRAVIS_TAG-windows-386.tar.gz
+  - rungo-$TRAVIS_TAG-windows-amd64.zip
+  - rungo-$TRAVIS_TAG-windows-386.zip
   on:
     repo: adamlamar/rungo
     tags: true
