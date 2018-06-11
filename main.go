@@ -86,6 +86,8 @@ func main() {
 	binary := filepath.Base(os.Args[0])
 	if binary == "rungo" {
 		binary = "go"
+	} else if binary == "rungo.exe" {
+		binary = "go.exe"
 	}
 
 	err = runGo(binary, baseDir, os.Args[1:])
