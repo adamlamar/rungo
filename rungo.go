@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
@@ -54,7 +55,7 @@ func findVersionFile() string {
 			_ = versionFile.Close()
 			if version != "" {
 				log.Debugf("Using version specification from %v", versionFileName)
-				return version
+				return strings.TrimSpace(version)
 			}
 		}
 
