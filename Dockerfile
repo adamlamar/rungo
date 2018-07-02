@@ -1,4 +1,4 @@
-FROM golang:1.9.2
+FROM golang:1.10.3
 
 RUN go version
 RUN go get -v -u github.com/Sirupsen/logrus
