@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DEFAULT_GOLANG        = "1.10.3"
+	DEFAULT_GOLANG        = "1.11.4"
 	DEFAULT_GOOS          = runtime.GOOS
 	DEFAULT_GOARCH        = runtime.GOARCH
 	DEFAULT_DOWNLOAD_BASE = "https://storage.googleapis.com/golang/"
